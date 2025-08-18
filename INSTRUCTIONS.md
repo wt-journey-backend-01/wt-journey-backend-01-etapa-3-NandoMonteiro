@@ -1,26 +1,4 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/mzlsx7b3)
-
-# Etapa 3: Persistência de Dados com PostgreSQL e Knex.js
-
-## 🧩 Contexto
-
-O Departamento de Polícia está avançando na modernização de seus sistemas. Após a criação da API REST (Etapa 2), que armazenava dados em memória, agora chegou o momento de dar um passo importante rumo à persistência real.  
-A partir desta etapa, todos os registros de **agentes** e **casos policiais** devem ser armazenados em um **banco de dados PostgreSQL**.
-
-Sua missão será **migrar a API existente**, que atualmente utiliza arrays, para uma solução robusta e escalável, utilizando **Knex.js** como Query Builder, **migrations** para versionamento de esquemas e **seeds** para inserir dados iniciais.
-
----
-
-## 🎯 Objetivo
-
-Refatorar a API de gerenciamento de agentes e casos policiais para utilizar um **banco de dados PostgreSQL**, com suporte a migrations e seeds, mantendo todas as funcionalidades REST da etapa anterior.
-
----
-
-## **O que deve ser feito**
-
-# 📁 Estrutura dos Diretórios (pastas)
-
+# 📁  Estrutura dos Diretórios (pastas) 
 ```
 📦 SEU-REPOSITÓRIO
 │
@@ -52,11 +30,10 @@ Refatorar a API de gerenciamento de agentes e casos policiais para utilizar um *
 │ └── errorHandler.js
 │
 
-
+  
 ```
 
 ### 1. Configurar o banco de dados PostgreSQL com Docker
-
 - Crie um arquivo .env na raíz do projeto para armazenar as seguintes variáveis de ambiente do nosso banco de dados:
 
 ```
@@ -64,13 +41,13 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_DB=policia_db
 ```
-
 **OBSERVAÇÃO: o uso de valores diferentes resultará em falhas nos testes**
 
 - Crie um arquivo `docker-compose.yml` na raiz do projeto para subir um container do PostgreSQL com um **volume persistente**, utilizando as váriaveis de ambiente para inserir dados sensíveis. Tenha certeza de seu container está rodando quando for desenvolver sua aplicação
 
+docker compose up -d 
+  
 ### 2. Instalar o knex e criar o arquivo **`knexfile.js`**
-
 - Primeiro instale o knex localmente com `npm install knex pg`
 - Rode `npm install dotenv` para utilizarmos variáveis do arquivo .env
 - Agora, na **raiz do projeto**, devemos criar o knexfile.js com o comando `npx knex init`. Ele cria um arquivo de configurações de conexão com o PostgreSQL para diversos ambientes. Criaremos uma configuração de desenvolvimento para nos conectarmos ao banco que criamos e adicionaremos caminhos para a criação de migrations e seeds, edite esse arquivo para deixá-lo assim:
@@ -85,6 +62,7 @@ POSTGRES_DB=policia_db
 require('dotenv').config();
 
 module.exports = {
+
   development: {
     client: 'pg',
     connection: {
@@ -95,11 +73,11 @@ module.exports = {
       database: process.env.POSTGRES_DB,
     },
     migrations: {
-      directory: './db/migrations',
-    },
+        directory: './db/migrations',
+      },
     seeds: {
-      directory: './db/seeds',
-    },
+        directory: './db/seeds',
+      },
   },
   ci: {
     client: 'pg',
@@ -116,31 +94,30 @@ module.exports = {
     seeds: {
       directory: './db/seeds',
     },
-  },
+  }
+
 };
+
 ```
 
 ### 3. Criar a pasta `db/`
-
 Dentro da pasta `db/`, você deve criar os seguinte arquivo:
 
 #### **`db.js`**
-
 Arquivo responsável por criar e exportar a instância do Knex:
 
 ```js
-const config = require('../knexfile');
-const knex = require('knex');
+const config = require("../knexfile")
+const knex = require("knex")
 
-const db = knex(config.development);
+const db = knex(config.development)
 
-module.exports = db;
+module.exports = db
 ```
 
 ---
 
 ### 4. Criar as Migrations
-
 - Use o Knex CLI para gerar as migrations com o seguinte nome (Tem certeza de que o diretório que você se encontra no terminal é a raiz do projeto, do contrário você terá uma pasta `db/` duplicada):
 
 ```bash
@@ -153,17 +130,13 @@ npx knex migrate:make solution_migrations
   - `casos`: `id`, `titulo (string)`, `descricao (string)`, `status (aberto/solucionado)`, `agente_id` com **foreign key** para `agentes.id`.
 
 **IMPORTANTE! Não utilizaremos mais o uuid, pois o PostgreSQL lida com a lógica de indexação e incrementa automaticamente. Jamais explicite o id dentro de um payload que será guardado no banco de dados, pois isso pode causar comportamento indesejado**
-
 - Aplique as migrations com:
-
 ```bash
 npx knex migrate:latest
 ```
-
 ---
 
 ### 5. Criar Seeds
-
 - Crie seeds para popular as tabelas com pelo menos 2 agentes e 2 casos. Crie um arquivo para cada tabela e siga a nomeclatura que definimos abaixo. (Tem certeza de que o diretório que você se encontra no terminal é a raiz do projeto, do contrário você terá uma pasta `db/` duplicada):
 
 ```bash
@@ -172,39 +145,6 @@ npx knex seed:make casos
 
 
 ```
-
 - Execute as seeds com:
-
 ```bash
 npx knex seed:run
-```
-
-**OBSERVAÇÃO: Siga o nome do migration à risca para evitar falhas desnecessárias nos testes**
-
----
-
-### 6. Refatorar os Repositories
-
-- Substituir os arrays atuais por queries usando **Knex.js** (`select`, `insert`, `update`, `delete`).
-
----
-
-### 7. Manter Rotas e Controladores
-
-- Todos os endpoints de **/casos** e **/agentes** devem continuar funcionando com as mesmas regras e validações.
-
----
-
-### 8. Documentar de maneira simples em um arquivo INSTRUCTIONS.md
-
-Crie esse arquivo e adicione instruções claras para:
-
-- Subir o banco com Docker
-- Executar migrations
-- Rodar seeds
-
----
-
-## **Bônus 🌟**
-
-- Implementar endpoint `/agentes/:id/casos` para listar todos os casos atribuídos a um agente.

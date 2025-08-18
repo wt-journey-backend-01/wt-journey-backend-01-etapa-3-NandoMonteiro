@@ -11,15 +11,13 @@ on:
 
 jobs:
   grading:
-    
     permissions:
       contents: write
       checks: write
-     
 
     runs-on: ubuntu-latest
 
-    services: 
+    services:
       postgres:
         image: postgres:17
         env:
@@ -33,11 +31,10 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-    
+
     if: github.actor != 'github-classroom[bot]' && github.actor != 'WebTech-Journey-Autograder[bot]' && github.actor != 'ArthurCRodrigues'
 
     steps:
-     
       - name: Generate AUTOGRADER-BOT App Token
         id: generate_app_token
         uses: tibdex/github-app-token@v1
@@ -46,21 +43,18 @@ jobs:
           private_key: ${{ secrets.AUTOGRADER_APP_PRIVATE_KEY }}
           repository: ${{ github.repository }} # Scopes the token to the current repository
 
-   
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           path: submission
           token: ${{ steps.generate_app_token.outputs.token }} # Use the App's token for checkout
 
-      
       - name: Configure Git for AUTOGRADER-BOT
         run: |
           git config --global user.name "AUTOGRADER-BOT"
           git config --global user.email "AUTOGRADER-BOT[bot]@users.noreply.github.com"
           # Or a specific email associated with your bot, if you've configured one.
 
-    
       - name: Check repository criteria
         uses: webtech-network/autograder@etapa-3
         with:
@@ -68,5 +62,3 @@ jobs:
           redis_name: ${{ secrets.REDIS_NAME }}
           redis_url: ${{ secrets.REDIS_URL }}
           autograder_engine: ${{ secrets.ENGINE }}
-
-     
