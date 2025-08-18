@@ -171,8 +171,8 @@ const patchCaso = async (req, res, next) => {
 const deleteCaso = async (req, res, next) => {
   try {
     const { id } = req.params;
-    await casosRepository.remove(id);
-    if (!deleteCaso) {
+    const deleted = await casosRepository.remove(id);
+    if (!deleted) {
       throw new AppError('Caso não encontrado.', 404);
     }
     res.status(204).send();

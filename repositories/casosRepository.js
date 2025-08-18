@@ -6,7 +6,7 @@ async function findAll() {
     const casos = await db("casos").select("*");
     return casos;
   } catch (error) {
-    throw new AppError(500, "Erro ao buscar casos", [error.message]);
+    throw new AppError("Erro ao buscar casos", 500, [error.message]);
   }
 }
 
@@ -21,7 +21,7 @@ async function findById(id) {
     if (error instanceof AppError) {
       throw error;
     }
-    throw new AppError(500, "Erro ao buscar caso por ID", [error.message]);
+    throw new AppError("Erro ao buscar caso por ID", 500, [error.message]);
   }
 }
 
@@ -45,7 +45,7 @@ async function update(id, data) {
     if (error instanceof AppError) {
       throw error;
     }
-    throw new AppError("Erro ao atualizar caso", [error.message]);
+    throw new AppError("Erro ao atualizar caso", 500 [error.message]);
   }
 }
 
@@ -55,7 +55,7 @@ async function remove(id) {
     return deleted > 0;
     
   } catch (error) {
-    throw new AppError(500, "Erro ao deletar caso", [error.message]);
+    throw new AppError("Erro ao deletar caso", 500, [error.message]);
   }
 }
 

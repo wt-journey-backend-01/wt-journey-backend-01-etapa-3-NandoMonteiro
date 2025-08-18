@@ -149,8 +149,8 @@ const patchAgente = async (req, res, next) => {
 const deleteAgente = async (req, res, next) => {
   try {
     const { id } = req.params;
-    await agentesRepository.remove(id);
-    if (!deleteAgente) {
+    const deleted = await agentesRepository.remove(id);
+    if (!deleted) {
       throw new AppError('Agente não encontrado.', 404);
     }
     res.status(204).send();
