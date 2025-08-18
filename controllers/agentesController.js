@@ -132,10 +132,12 @@ const patchAgente = async (req, res, next) => {
     if (updates.dataDeIncorporacao && !validarData(updates.dataDeIncorporacao)) {
       throw new AppError('Data de incorporação inválida.', 400);
     }
-    const cargosValidos = ['inspetor', 'delegado', 'investigador', 'escrivao', 'policial'];
-    if (!cargosValidos.includes(cargo)) {
-      throw new AppError('Cargo inválido.', 400);
-    }
+    if (updates.cargo) {
+      const cargosValidos = ['inspetor', 'delegado', 'investigador', 'escrivao', 'policial'];
+      if (!cargosValidos.includes(updates.cargo)) {
+        throw new AppError('Cargo inválido.', 400);
+      }
+  }
     const agenteAtualizado = await agentesRepository.update(id, updates);
     
     res.status(200).json(agenteAtualizado);
@@ -148,7 +150,9 @@ const deleteAgente = async (req, res, next) => {
   try {
     const { id } = req.params;
     await agentesRepository.remove(id);
-    
+    if (!deleteAgente) {
+      throw new AppError('Agente não encontrado.', 404);
+    }
     res.status(204).send();
   } catch (error) {
     next(error);

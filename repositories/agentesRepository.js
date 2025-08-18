@@ -21,7 +21,7 @@ async function findAll() {
     const agentes = await db('agentes').select('*');
     return agentes;
   } catch (error) {
-    throw new AppError(500, 'Erro ao buscar agentes', [error.message]);
+    throw new AppError('Erro ao buscar agentes', 500, [error.message]);
   }
 }
 
@@ -30,7 +30,7 @@ async function create(data) {
     const [agente] = await db('agentes').insert(data).returning('*');
     return agente;  
   } catch (error) {
-    throw new AppError(500, 'Erro ao criar agente', [error.message]);
+    throw new AppError('Erro ao criar agente', 500, [error.message]);
   }
 }
 
@@ -45,7 +45,7 @@ async function update(id, data) {
     if (error instanceof AppError) {
       throw error;
     }
-    throw new AppError(500, 'Erro ao atualizar agente', [error.message]);
+    throw new AppError('Erro ao atualizar agente', 500, [error.message]);
   }
 }
 
@@ -55,7 +55,7 @@ async function remove(id) {
     return deleted > 0;
     
   } catch (error) {
-    throw new AppError(500, 'Erro ao deletar agente', [error.message]);
+    throw new AppError('Erro ao deletar agente', 500, [error.message]);
   }
 }
 

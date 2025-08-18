@@ -172,8 +172,9 @@ const deleteCaso = async (req, res, next) => {
   try {
     const { id } = req.params;
     await casosRepository.remove(id);
-    
-    // O repositório já trata o caso de não encontrar o ID, lançando um 404
+    if (!deleteCaso) {
+      throw new AppError('Caso não encontrado.', 404);
+    }
     res.status(204).send();
   } catch (error) {
     next(error);
