@@ -45,7 +45,7 @@ async function update(id, data) {
     if (error instanceof AppError) {
       throw error;
     }
-    throw new AppError("Erro ao atualizar caso", 500 [error.message]);
+    throw new AppError("Erro ao atualizar caso", 500, [error.message]);
   }
 }
 

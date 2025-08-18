@@ -34,13 +34,13 @@ const casosController = require('../controllers/casosController');
  *           $ref: '#/components/schemas/Agente'
  *           description: Dados do agente responsável
  *       example:
- *         id: "f5fb2ad5-22a8-4cb4-90f2-8733517a0d46"
+ *         id: 1
  *         titulo: "homicidio"
  *         descricao: "Disparos foram reportados às 22:33 do dia 10/07/2007 na região do bairro União, resultando na morte da vítima, um homem de 45 anos."
  *         status: "aberto"
- *         agente_id: "401bccf5-cf9e-489d-8412-446cd169a0f1"
+ *         agente_id: 1
  *         agente:
- *           id: "401bccf5-cf9e-489d-8412-446cd169a0f1"
+ *           id: 1
  *           nome: "Rommel Carneiro"
  *           dataDeIncorporacao: "1992-10-04"
  *           cargo: "delegado"
@@ -211,8 +211,7 @@ const casosController = require('../controllers/casosController');
  *               type: object
  *               properties:
  *                 id:
- *                   type: string
- *                   format: uuid
+ *                   type: integer
  *                 titulo:
  *                   type: string
  *                 descricao:
@@ -221,8 +220,7 @@ const casosController = require('../controllers/casosController');
  *                   type: string
  *                   enum: [aberto, solucionado]
  *                 agente_id:
- *                   type: string
- *                   format: uuid
+ *                   type: integer
  *       400:
  *         description: Dados inválidos
  *         content:
@@ -281,8 +279,7 @@ const casosController = require('../controllers/casosController');
  *               type: object
  *               properties:
  *                 id:
- *                   type: string
- *                   format: uuid
+ *                   type: integer
  *                 titulo:
  *                   type: string
  *                 descricao:
@@ -291,8 +288,7 @@ const casosController = require('../controllers/casosController');
  *                   type: string
  *                   enum: [aberto, solucionado]
  *                 agente_id:
- *                   type: string
- *                   format: uuid
+ *                   type: integer
  *       400:
  *         description: Dados inválidos
  *         content:
@@ -357,8 +353,7 @@ const casosController = require('../controllers/casosController');
  *               type: object
  *               properties:
  *                 id:
- *                   type: string
- *                   format: uuid
+ *                   type: integer
  *                 titulo:
  *                   type: string
  *                 descricao:
@@ -367,8 +362,7 @@ const casosController = require('../controllers/casosController');
  *                   type: string
  *                   enum: [aberto, solucionado]
  *                 agente_id:
- *                   type: string
- *                   format: uuid
+ *                   type: integer
  *       400:
  *         description: Dados inválidos
  *         content:

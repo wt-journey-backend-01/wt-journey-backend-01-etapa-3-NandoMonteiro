@@ -27,7 +27,7 @@ const agentesController = require('../controllers/agentesController.js');
  *           type: string
  *           description: Cargo do agente
  *       example:
- *         id: "401bccf5-cf9e-489d-8412-446cd169a0f1"
+ *         id: "1"
  *         nome: "Rommel Carneiro"
  *         dataDeIncorporacao: "1992-10-04"
  *         cargo: "delegado"
