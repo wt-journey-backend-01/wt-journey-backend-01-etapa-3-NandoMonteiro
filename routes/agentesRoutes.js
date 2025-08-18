@@ -14,8 +14,7 @@ const agentesController = require('../controllers/agentesController.js');
  *         - cargo
  *       properties:
  *         id:
- *           type: string
- *           format: uuid
+ *           type: integer
  *           description: ID único do agente
  *         nome:
  *           type: string
@@ -112,8 +111,7 @@ const agentesController = require('../controllers/agentesController.js');
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *           format: uuid
+ *           type: integer
  *         description: ID do agente
  *     responses:
  *       200:
@@ -160,8 +158,7 @@ const agentesController = require('../controllers/agentesController.js');
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *           format: uuid
+ *           type: integer
  *         description: ID do agente
  *     requestBody:
  *       required: true
@@ -193,8 +190,7 @@ const agentesController = require('../controllers/agentesController.js');
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *           format: uuid
+ *           type: integer
  *         description: ID do agente
  *     requestBody:
  *       required: true
@@ -226,8 +222,7 @@ const agentesController = require('../controllers/agentesController.js');
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *           format: uuid
+ *           type: integer
  *         description: ID do agente
  *     responses:
  *       204:

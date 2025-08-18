@@ -12,7 +12,7 @@ async function findById(id) {
     if (error instanceof AppError) {
       throw error;
     }
-    throw new AppError(500, 'Erro ao buscar agente', [error.message]);
+    throw new AppError('Erro ao buscar agente', 500, [error.message]);
   }
 }
 

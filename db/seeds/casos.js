@@ -10,13 +10,13 @@ exports.seed = async function(knex) {
         "titulo": "Roubo de Joias",
         "descricao": "Roubo de joias valiosas em uma residência de luxo.",
         "status": "aberto",
-        "agente_id": "1"
+        "agente_id": 1
       },
       { 
         "titulo": "Fraude Financeira",
         "descricao": "Esquema de fraude financeira envolvendo várias contas bancárias.",
         "status": "aberto",
-        "agente_id": "2"
+        "agente_id": 2
       }
   ]);
 };

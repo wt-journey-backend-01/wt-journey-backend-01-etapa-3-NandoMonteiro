@@ -15,7 +15,7 @@ exports.up = async function (knex) {
         .onUpdate('cascade');
     table.string('titulo').notNullable();
     table.text('descricao').notNullable();
-    table.enu('status', ['aberto', 'em andamento', 'fechado']).notNullable().defaultTo('aberto');
+    table.enu('status', ['aberto', 'solucionado']).notNullable().defaultTo('aberto');
   });
 };
 

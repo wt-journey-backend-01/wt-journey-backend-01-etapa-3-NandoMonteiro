@@ -30,7 +30,7 @@ async function create(data) {
     const [caso] = await db("casos").insert(data).returning("*");
     return caso;  
   } catch (error) {
-    throw new AppError(500, "Erro ao criar caso", [error.message]);
+    throw new AppError("Erro ao criar caso", 500, [error.message]);
   }
 }
 

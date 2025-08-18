@@ -15,8 +15,7 @@ const casosController = require('../controllers/casosController');
  *         - agente_id
  *       properties:
  *         id:
- *           type: string
- *           format: uuid
+ *           type: integer
  *           description: ID único do caso
  *         titulo:
  *           type: string
@@ -29,8 +28,7 @@ const casosController = require('../controllers/casosController');
  *           enum: [aberto, solucionado]
  *           description: Status do caso
  *         agente_id:
- *           type: string
- *           format: uuid
+ *           type: integer
  *           description: ID do agente responsável
  *         agente:
  *           $ref: '#/components/schemas/Agente'
@@ -66,8 +64,7 @@ const casosController = require('../controllers/casosController');
  *           enum: [aberto, solucionado]
  *           description: Status do caso
  *         agente_id:
- *           type: string
- *           format: uuid
+ *           type: integer
  *           description: ID do agente responsável
  *       example:
  *         titulo: "Roubo a banco"
@@ -89,8 +86,7 @@ const casosController = require('../controllers/casosController');
  *           enum: [aberto, solucionado]
  *           description: Status do caso
  *         agente_id:
- *           type: string
- *           format: uuid
+ *           type: integer
  *           description: ID do agente responsável
  *       example:
  *         status: "solucionado"
@@ -112,8 +108,7 @@ const casosController = require('../controllers/casosController');
  *       - in: query
  *         name: agente_id
  *         schema:
- *           type: string
- *           format: uuid
+ *           type: integer
  *         description: Filtrar casos por agente responsável
  *       - in: query
  *         name: search
@@ -174,8 +169,7 @@ const casosController = require('../controllers/casosController');
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *           format: uuid
+ *           type: integer
  *         description: ID do caso
  *     responses:
  *       200:
@@ -270,8 +264,7 @@ const casosController = require('../controllers/casosController');
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *           format: uuid
+ *           type: integer
  *         description: ID do caso
  *     requestBody:
  *       required: true
@@ -347,8 +340,7 @@ const casosController = require('../controllers/casosController');
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *           format: uuid
+ *           type: integer
  *         description: ID do caso
  *     requestBody:
  *       required: true
@@ -424,8 +416,7 @@ const casosController = require('../controllers/casosController');
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *           format: uuid
+ *           type: integer
  *         description: ID do caso
  *     responses:
  *       204:
@@ -447,6 +438,6 @@ router.get('/:id', casosController.getCasoById);
 router.post('/', casosController.createCaso);
 router.put('/:id', casosController.updateCaso);
 router.delete('/:id', casosController.deleteCaso);
-router.patch('/:id', casosController.updateCaso);
+router.patch('/:id', casosController.patchCaso);
 
 module.exports = router;
