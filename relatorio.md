@@ -1,284 +1,292 @@
 <sup>Esse é um feedback gerado por IA, ele pode conter erros.</sup>
 
-Você tem 9 créditos restantes para usar o sistema de feedback AI.
+Você tem 8 créditos restantes para usar o sistema de feedback AI.
 
 # Feedback para NandoMonteiro:
 
 Nota final: **0.0/100**
 
-# Feedback para o NandoMonteiro 🚀
+# Feedback para NandoMonteiro 🚓✨
 
-Olá, Nando! Antes de tudo, parabéns por todo o esforço e dedicação que você colocou nesse projeto! 🎉 Eu percebi que você foi além dos requisitos básicos e conseguiu implementar vários filtros e buscas avançadas, o que é sensacional! Isso mostra que você está buscando ir além e entregar uma API mais robusta e funcional. Palmas para você por isso! 👏👏
-
----
-
-## Vamos analisar juntos o que pode estar travando seu progresso e como podemos destravar esses pontos para você avançar com confiança! 🕵️‍♂️🔍
+Olá, Nando! Primeiro, parabéns por toda a dedicação que você teve até aqui. Migrar uma API que usava arrays para um banco de dados relacional como o PostgreSQL, usando Knex.js, não é tarefa simples! 🎯 Além disso, notei que você implementou vários filtros e validações complexas nos seus endpoints, o que é um baita esforço extra. Isso mostra seu empenho em entregar uma API robusta e funcional. 👏👏
 
 ---
 
-### 1. Estrutura do Projeto: Está Quase Lá, mas Atenção na Organização!
+## 🎉 Pontos Fortes que Você Conquistou
 
-A estrutura do seu projeto está muito próxima do esperado, e isso é ótimo! Porém, é fundamental seguir exatamente o padrão para que tudo funcione perfeitamente, especialmente em um desafio com vários arquivos e camadas.
-
-A estrutura esperada é esta:
-
-```
-📦 SEU-REPOSITÓRIO
-│
-├── package.json
-├── server.js
-├── knexfile.js
-├── INSTRUCTIONS.md
-│
-├── db/
-│   ├── migrations/
-│   ├── seeds/
-│   └── db.js
-│
-├── routes/
-│   ├── agentesRoutes.js
-│   └── casosRoutes.js
-│
-├── controllers/
-│   ├── agentesController.js
-│   └── casosController.js
-│
-├── repositories/
-│   ├── agentesRepository.js
-│   └── casosRepository.js
-│
-└── utils/
-    └── errorHandler.js
-```
-
-Eu vi que você tem essa estrutura, o que é ótimo! Só fique atento para garantir que todos os arquivos estejam exatamente no lugar certo, e que não tenha pastas duplicadas ou arquivos faltando.
+- Você implementou filtros avançados para agentes e casos, como filtragem por data de incorporação, status, e busca por palavras-chave. Isso é um diferencial enorme! 🔍
+- As mensagens de erro personalizadas para dados inválidos estão bem estruturadas, com o uso da classe `AppError`. Isso mostra que você pensou em uma boa experiência para o consumidor da API. 💡
+- A organização modular do código, com separação clara entre rotas, controllers e repositórios, está ótima — isso facilita muito a manutenção e escalabilidade do projeto. 🏗️
+- Você criou os seeds com dados reais e variados, o que ajuda a testar e demonstrar a API com exemplos concretos. Excelente! 🌱
 
 ---
 
-### 2. Configuração do Banco de Dados e Migrations: Aqui Está o Principal Obstáculo
+## 🕵️ Análise Detalhada dos Principais Pontos de Atenção
 
-Ao analisar seu código, percebi que a conexão com o banco e a criação das tabelas são pontos cruciais que impactam o funcionamento de TODO o sistema. Se a conexão ou as tabelas não estiverem configuradas corretamente, nada funciona direito.
+### 1. **Conexão e Configuração do Banco de Dados**
 
-Vamos aos detalhes:
-
-- Seu arquivo `knexfile.js` está correto e usa as variáveis de ambiente, o que é ótimo.
-- O arquivo `db/db.js` também está configurado para usar o ambiente correto.
-- No entanto, o problema está nas **migrations** para a tabela `casos`.
-
-Veja o trecho da migration `20250817140754_create_casos_table.js`:
+Ao revisar seu código, percebi que a configuração do Knex e a conexão com o banco parecem corretas à primeira vista:
 
 ```js
-table.enu('status', ['aberto', 'em andamento', 'fechado']).notNullable().defaultTo('aberto');
+// knexfile.js
+require('dotenv').config();
+
+module.exports = {
+  development: {
+    client: 'pg',
+    connection: {
+      host: '127.0.0.1',
+      port: 5432,
+      user: process.env.POSTGRES_USER,
+      password: process.env.POSTGRES_PASSWORD,
+      database: process.env.POSTGRES_DB,
+    },
+    migrations: { directory: './db/migrations' },
+    seeds: { directory: './db/seeds' },
+  },
+  // ...
+};
 ```
 
-Aqui temos um problema fundamental: o enum para o campo `status` inclui os valores `'em andamento'` e `'fechado'`, mas no requisito do projeto e no restante do seu código, o status válido deve ser somente `'aberto'` ou `'solucionado'`. Isso causa um desalinhamento entre a estrutura do banco e as validações da aplicação.
-
-**Por que isso é crítico?**
-
-- Quando você tenta inserir ou atualizar um caso com status `'solucionado'`, o banco rejeita porque esse valor não está no enum da tabela.
-- Isso pode causar erros silenciosos ou falhas que impedem a criação, atualização e listagem correta dos casos.
-- Como consequência, vários endpoints relacionados a casos falham.
-
-**Como corrigir?**
-
-Altere a migration para:
+E seu `db.js` está usando o ambiente correto:
 
 ```js
-table.enu('status', ['aberto', 'solucionado']).notNullable().defaultTo('aberto');
+const knexConfig = require('../knexfile');
+const knex = require('knex');
+
+const nodeEnv = process.env.NODE_ENV || 'development';
+const config = knexConfig[nodeEnv];
+
+const db = knex(config);
+
+module.exports = db;
 ```
 
-Assim, o banco aceitará somente os valores que sua aplicação espera e valida.
+**Porém, há um detalhe importante:** seu arquivo `.env` precisa estar presente na raiz do projeto e conter exatamente:
+
+```
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=policia_db
+```
+
+Se esses valores estiverem diferentes ou o `.env` não estiver carregado corretamente, a conexão com o banco falhará silenciosamente, e isso pode ser a raiz de vários problemas que você está enfrentando.
+
+Além disso, certifique-se que o container do PostgreSQL está rodando e que a porta 5432 está liberada no seu ambiente local. O arquivo `docker-compose.yml` que você enviou está correto para isso, mas vale a pena conferir se o container está ativo com:
+
+```bash
+docker ps
+```
+
+Se o banco não estiver ativo, sua API não conseguirá executar queries, e isso impacta todos os endpoints.
 
 ---
 
-### 3. Validação e Uso do ID: Atenção ao Tipo e Formato
+### 2. **Estrutura das Migrations**
 
-Notei que em várias partes do seu código, especialmente nos repositórios, você busca registros pelo campo `id` usando:
+Suas migrations estão bem feitas, com as tabelas `agentes` e `casos` criadas com as colunas corretas:
 
 ```js
-const agente = await db('agentes').where({ id }).first();
+// db/migrations/20250817140746_create_agentes_table.js
+exports.up = async function (knex) {
+  await knex.schema.createTable('agentes', (table) => {
+    table.increments('id').primary();
+    table.string('nome').notNullable();
+    table.date('dataDeIncorporacao').notNullable();
+    table.enum('cargo', ['inspetor', 'delegado', 'investigador', 'escrivao', 'policial']).notNullable();
+  });
+};
 ```
 
-Mas na migration, o campo `id` é criado com `table.increments('id').primary();`, que gera um **inteiro autoincrementado**, e não um UUID.
+```js
+// db/migrations/20250817140754_create_casos_table.js
+exports.up = async function (knex) {
+  await knex.schema.createTable('casos', (table) => {
+    table.increments('id').primary();
+    table.integer('agente_id').unsigned().notNullable()
+         .references('id').inTable('agentes')
+         .onDelete('cascade').onUpdate('cascade');
+    table.string('titulo').notNullable();
+    table.text('descricao').notNullable();
+    table.enu('status', ['aberto', 'solucionado']).notNullable().defaultTo('aberto');
+  });
+};
+```
 
-Por isso, quando você usa em rotas e validações o formato UUID (como em Swagger e validações), isso gera uma incompatibilidade.
+**Porém, um ponto importante:** você precisa ter certeza de que executou as migrations com o comando:
 
-**Impacto disso:**
+```bash
+npx knex migrate:latest
+```
 
-- Se sua API espera IDs no formato UUID (string com letras e números), mas o banco usa inteiro, as buscas pelo ID falham porque o formato não bate.
-- Isso gera erros 404 "não encontrado" mesmo para IDs que existem.
-- Também pode causar erros de validação no Swagger e na API.
+Se as tabelas não existirem no banco, qualquer operação de leitura ou escrita vai falhar.
 
-**O que fazer?**
+---
 
-- Ajuste a documentação Swagger para refletir que o `id` é um número inteiro (type: integer), e não UUID.
-- Nas rotas e validações, trate o `id` como número, convertendo `req.params.id` para número com `parseInt` ou validando se é número.
-- Isso vai garantir que as buscas no banco funcionem corretamente.
+### 3. **Seeds**
 
-Exemplo de ajuste na rota:
+Os seeds estão corretos e inserem dados válidos:
 
 ```js
-const id = parseInt(req.params.id, 10);
-if (isNaN(id)) {
-  throw new AppError('ID inválido', 400);
+await knex('agentes').del();
+await knex('agentes').insert([
+  { nome: 'Rommel Carneiro', dataDeIncorporacao: '1992-10-04', cargo: 'delegado' },
+  { nome: 'Ana Paula Silva', dataDeIncorporacao: '1995-05-15', cargo: 'inspetor' },
+  { nome: 'Carlos Alberto Souza', dataDeIncorporacao: '2000-03-20', cargo: 'investigador' },
+]);
+```
+
+```js
+await knex('casos').del();
+await knex('casos').insert([
+  { titulo: "Roubo de Joias", descricao: "Roubo de joias valiosas em uma residência de luxo.", status: "aberto", agente_id: 1 },
+  { titulo: "Fraude Financeira", descricao: "Esquema de fraude financeira envolvendo várias contas bancárias.", status: "aberto", agente_id: 2 },
+]);
+```
+
+Mas, novamente, certifique-se de que rodou:
+
+```bash
+npx knex seed:run
+```
+
+para popular as tabelas. Caso contrário, suas queries para buscar agentes e casos não encontrarão registros, causando falhas nos endpoints.
+
+---
+
+### 4. **Repositórios com Retornos e Tratamento de Erros**
+
+No seu `agentesRepository.js`, encontrei um problema no método `findAll`:
+
+```js
+async function findAll() {
+  try {
+    const agentes = await db('agentes').select('*');
+    return agentes;
+  } catch (error) {
+    throw new AppError(500, 'Erro ao buscar agentes', [error.message]);
+  }
 }
 ```
 
----
+Aqui, o `AppError` está sendo chamado com os parâmetros invertidos: o primeiro argumento deveria ser a mensagem de erro (`string`), e o segundo o código (`number`). Você passou `500` primeiro e depois a string. Isso pode causar erros inesperados no tratamento.
 
-### 4. Uso do ENUM e Validação Consistente
-
-Você está validando o campo `cargo` dos agentes e `status` dos casos com enums, o que é ótimo! Porém, na migration da tabela `agentes`, você definiu o enum assim:
+O correto seria:
 
 ```js
-table.enum('cargo', ['inspetor', 'delegado', 'investigador', 'escrivao', 'policial']).notNullable();
+throw new AppError('Erro ao buscar agentes', 500, [error.message]);
 ```
 
-Mas no Swagger, o campo `cargo` não tem enum definido, e na validação do controller também não há uma validação explícita para garantir que apenas esses cargos sejam aceitos.
+Esse mesmo erro aparece também em outros métodos do repositório, como `create`, `update` e `remove`. Isso pode estar causando erros silenciosos e impedindo que sua API responda corretamente.
 
-**Sugestão:**
+---
 
-- Adicione validação explícita no controller para o campo `cargo`, garantindo que só os valores permitidos sejam aceitos.
-- Atualize o Swagger para refletir o enum do `cargo`, assim a documentação fica alinhada com o banco e a validação.
+### 5. **Controllers — Validação e Lógica**
 
-Exemplo de validação:
+No seu `agentesController.js`, percebi um problema no método `patchAgente`:
 
 ```js
+if (updates.dataDeIncorporacao && !validarData(updates.dataDeIncorporacao)) {
+  throw new AppError('Data de incorporação inválida.', 400);
+}
 const cargosValidos = ['inspetor', 'delegado', 'investigador', 'escrivao', 'policial'];
 if (!cargosValidos.includes(cargo)) {
   throw new AppError('Cargo inválido.', 400);
 }
 ```
 
----
-
-### 5. Tratamento de Erros no Repositório: Atenção à Ordem dos Parâmetros do AppError
-
-No arquivo `repositories/agentesRepository.js`, percebi que você está usando o `AppError` assim:
+Aqui, você está validando a variável `cargo` que não foi extraída de `updates`. Isso vai causar erro porque `cargo` está indefinido no escopo. O correto é validar se o `updates` contém o campo `cargo` antes de validar o valor:
 
 ```js
-throw new AppError(500, 'Erro ao buscar agente', [error.message]);
+if (updates.cargo) {
+  const cargosValidos = ['inspetor', 'delegado', 'investigador', 'escrivao', 'policial'];
+  if (!cargosValidos.includes(updates.cargo)) {
+    throw new AppError('Cargo inválido.', 400);
+  }
+}
 ```
 
-Mas no `AppError` do seu projeto, o construtor espera a mensagem como primeiro parâmetro e o status code como segundo, ou seja, a ordem está invertida.
+Esse detalhe pode estar bloqueando atualizações parciais (PATCH) de agentes.
 
-Isso pode estar causando que erros internos retornem respostas mal formatadas ou status incorretos.
+---
 
-**O correto seria:**
+### 6. **Tratamento de Respostas e Status Codes**
+
+Notei que em alguns métodos de repositórios, como `remove`, você retorna `true` ou `false` (exemplo: `return deleted > 0;`), mas no controller você não verifica se a exclusão realmente ocorreu para retornar o status 404 caso o registro não exista.
+
+Exemplo no `agentesRepository.js`:
 
 ```js
-throw new AppError('Erro ao buscar agente', 500, [error.message]);
+async function remove(id) {
+  try {
+    const deleted = await db('agentes').where({ id }).del();
+    return deleted > 0;
+  } catch (error) {
+    throw new AppError(500, 'Erro ao deletar agente', [error.message]);
+  }
+}
 ```
 
-Faça essa correção em todos os lugares do repositório onde o `AppError` é lançado.
-
----
-
-### 6. Rotas de Casos: PATCH Está Usando o Controller Errado
-
-No arquivo `routes/casosRoutes.js`, você definiu:
+No controller, o correto seria:
 
 ```js
-router.patch('/:id', casosController.updateCaso);
+const deleted = await agentesRepository.remove(id);
+if (!deleted) {
+  throw new AppError('Agente não encontrado', 404);
+}
+res.status(204).send();
 ```
 
-Mas pelo padrão do seu controller, o método para PATCH é `patchCaso`, não `updateCaso`. Isso pode fazer com que a lógica de PATCH não execute corretamente.
-
-**Corrija para:**
-
-```js
-router.patch('/:id', casosController.patchCaso);
-```
+Assim, você garante que a API responde com 404 quando tenta deletar um agente que não existe.
 
 ---
 
-### 7. Seeds e Dados Iniciais: Verifique o Tipo do Campo `agente_id`
+### 7. **Estrutura de Pastas e Arquivos**
 
-No seu seed `db/seeds/casos.js`, você insere os casos com `agente_id` como string:
-
-```js
-{ 
-  "titulo": "Roubo de Joias",
-  "descricao": "Roubo de joias valiosas em uma residência de luxo.",
-  "status": "aberto",
-  "agente_id": "1"
-},
-```
-
-Mas no banco, `agente_id` é um inteiro. Isso pode causar problemas na inserção.
-
-**Recomendo alterar para números:**
-
-```js
-{
-  titulo: "Roubo de Joias",
-  descricao: "Roubo de joias valiosas em uma residência de luxo.",
-  status: "aberto",
-  agente_id: 1
-},
-```
+Sua estrutura de pastas está alinhada com o esperado, parabéns por isso! Isso ajuda muito na organização e legibilidade do projeto.
 
 ---
 
-### 8. Swagger e Documentação: Ajuste os Tipos de ID para Integer
+## 📚 Recursos Recomendados para Você
 
-Como já comentado, o campo `id` no banco é inteiro, mas no Swagger você está documentando como UUID string, por exemplo:
+Para ajudar a resolver os pontos acima, recomendo fortemente os seguintes recursos:
 
-```yaml
-id:
-  type: string
-  format: uuid
-```
+- **Configuração de Banco de Dados com Docker e Knex:**  
+  [Vídeo Docker + PostgreSQL + Node.js](http://googleusercontent.com/youtube.com/docker-postgresql-node)  
+  [Documentação oficial Knex Migrations](https://knexjs.org/guide/migrations.html)  
+  [Guia Knex Query Builder](https://knexjs.org/guide/query-builder.html)  
+  [Vídeo sobre Seeds com Knex](http://googleusercontent.com/youtube.com/knex-seeds)
 
-Isso pode confundir quem consome a API e também a validação.
+- **Validação e Tratamento de Erros em APIs:**  
+  [Status 400 Bad Request - MDN](https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/400)  
+  [Status 404 Not Found - MDN](https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/404)  
+  [Vídeo sobre validação de dados em Node.js/Express](https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_)
 
-Altere para:
+- **Arquitetura e Organização do Código:**  
+  [Arquitetura MVC em Node.js](https://youtu.be/bGN_xNc4A1k?si=Nj38J_8RpgsdQ-QH)  
+  [Refatoração em Node.js](http://googleusercontent.com/youtube.com/refatoracao-nodejs)
 
-```yaml
-id:
-  type: integer
-  description: ID único do agente
-```
-
----
-
-## Recursos que vão te ajudar a corrigir esses pontos:
-
-- Para configurar o banco com Docker e Knex, e garantir a conexão correta:  
-  [Configuração de Banco de Dados com Docker e Knex](http://googleusercontent.com/youtube.com/docker-postgresql-node)
-
-- Para entender e corrigir migrations, especialmente enums:  
-  [Documentação Oficial do Knex sobre Migrations](https://knexjs.org/guide/migrations.html)
-
-- Para aprender mais sobre o Query Builder do Knex e manipular dados corretamente:  
-  [Guia do Knex Query Builder](https://knexjs.org/guide/query-builder.html)
-
-- Para estruturar seu projeto e entender a arquitetura MVC:  
-  [Arquitetura MVC em Node.js](https://youtu.be/bGN_xNc4A1k?si=Nj38J_8RpgsdQ-QH)
-
-- Para validar dados e tratar erros corretamente na API:  
-  [Validação de Dados em APIs Node.js](https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_)
+- **Manipulação correta de status HTTP:**  
+  [HTTP Status Codes explicados](https://youtu.be/RSZHvQomeKE)
 
 ---
 
-## Resumo Rápido dos Pontos para Melhorar 📝
+## 📝 Resumo dos Pontos para Focar
 
-- ⚠️ Corrija o enum do campo `status` na migration de `casos` para `['aberto', 'solucionado']`.
-- ⚠️ Ajuste o tipo do `id` para inteiro em toda API, incluindo Swagger e validações.
-- ⚠️ Corrija a ordem dos parâmetros do `AppError` nos repositórios para evitar erros inesperados.
-- ⚠️ Altere a rota PATCH de casos para chamar o método correto `patchCaso`.
-- ⚠️ Ajuste os seeds para usar números no campo `agente_id`.
-- ⚠️ Implemente validações explícitas para o campo `cargo` dos agentes.
-- ⚠️ Verifique se sua estrutura de pastas está exatamente igual à esperada.
-- ⚠️ Atualize a documentação Swagger para refletir os tipos corretos.
+- Verifique se o arquivo `.env` está presente, com as variáveis exatamente como esperado, e se o Docker está rodando o container do PostgreSQL. Sem essa base, sua API não consegue se conectar ao banco.  
+- Execute as migrations e seeds para garantir que as tabelas e dados existam no banco.  
+- Corrija a ordem dos parâmetros do `AppError` nos repositórios para que mensagens e códigos sejam passados corretamente.  
+- Ajuste a validação no `patchAgente` para validar o campo `cargo` somente se ele existir no corpo da requisição.  
+- No método de exclusão (`remove`), garanta que o controller verifica se o registro foi realmente deletado para retornar 404 quando necessário.  
+- Continue mantendo a organização modular do código, isso é um ponto muito positivo!  
 
 ---
 
-Nando, você está no caminho certo, e com esses ajustes seu projeto vai ganhar uma base sólida para funcionar perfeitamente! 💪 Não desanime, pois são detalhes que fazem toda a diferença e que vão te deixar pronto para desafios ainda maiores! 🚀
+Nando, seu esforço está claro e você está no caminho certo! 🚀 Ajustando esses detalhes, sua API vai funcionar perfeitamente, e você vai conseguir entregar tudo que foi pedido com qualidade. Não desanime, cada erro é uma oportunidade para aprender e crescer. Estou aqui torcendo pelo seu sucesso! 💪✨
 
-Se precisar, volte aos recursos que indiquei para entender melhor cada ponto. Estou aqui torcendo por você! ✨
+Se precisar, volte a consultar os recursos que indiquei e revise com calma, você vai conseguir! 😉
 
-Um grande abraço e continue codando com paixão! 👨‍💻💙
+Abraços e até a próxima! 👋😊
 
 > Caso queira tirar uma dúvida específica, entre em contato com o Chapter no nosso [discord](https://discord.gg/DryuHVnz).
 
