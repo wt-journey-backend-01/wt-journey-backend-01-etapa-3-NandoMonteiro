@@ -70,7 +70,7 @@ const casosController = require('../controllers/casosController');
  *         titulo: "Roubo a banco"
  *         descricao: "Assalto ocorrido na agência bancária do centro da cidade"
  *         status: "aberto"
- *         agente_id: "401bccf5-cf9e-489d-8412-446cd169a0f1"
+ *         agente_id: 1
  *
  *     CasoPatchInput:
  *       type: object

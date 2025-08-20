@@ -7,7 +7,7 @@ exports.up = async function (knex) {
         table.increments('id').primary();
         table.string('nome').notNullable();
         table.date('dataDeIncorporacao').notNullable();
-        table.enum('cargo', ['inspetor', 'delegado', 'investigador', 'escrivao', 'policial']).notNullable();
+        table.string('cargo').notNullable();
     });
 };    
 /**

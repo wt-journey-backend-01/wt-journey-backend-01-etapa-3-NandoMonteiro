@@ -79,10 +79,7 @@ const createAgente = async (req, res, next) => {
     if (!validarData(dataDeIncorporacao)) {
       throw new AppError('Data de incorporação inválida. Use o formato YYYY-MM-DD e não informe datas futuras.', 400);
     }
-    const cargosValidos = ['inspetor', 'delegado', 'investigador', 'escrivao', 'policial'];
-    if (!cargosValidos.includes(cargo)) {
-      throw new AppError('Cargo inválido.', 400);
-    }
+    
     const dadosNovoAgente = { nome, dataDeIncorporacao, cargo };
     const agenteCriado = await agentesRepository.create(dadosNovoAgente);
     
@@ -106,10 +103,7 @@ const updateAgente = async (req, res, next) => {
     if (!validarData(dataDeIncorporacao)) {
       throw new AppError('Data de incorporação inválida.', 400);
     }
-    const cargosValidos = ['inspetor', 'delegado', 'investigador', 'escrivao', 'policial'];
-    if (!cargosValidos.includes(cargo)) {
-      throw new AppError('Cargo inválido.', 400);
-    }
+    
     const agenteAtualizado = await agentesRepository.update(id, { nome, dataDeIncorporacao, cargo });
     
     res.status(200).json(agenteAtualizado);
@@ -132,12 +126,7 @@ const patchAgente = async (req, res, next) => {
     if (updates.dataDeIncorporacao && !validarData(updates.dataDeIncorporacao)) {
       throw new AppError('Data de incorporação inválida.', 400);
     }
-    if (updates.cargo) {
-      const cargosValidos = ['inspetor', 'delegado', 'investigador', 'escrivao', 'policial'];
-      if (!cargosValidos.includes(updates.cargo)) {
-        throw new AppError('Cargo inválido.', 400);
-      }
-  }
+    
     const agenteAtualizado = await agentesRepository.update(id, updates);
     
     res.status(200).json(agenteAtualizado);
