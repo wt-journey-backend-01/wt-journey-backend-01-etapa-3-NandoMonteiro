@@ -19,7 +19,7 @@ const getAllCasos = async (req, res, next) => {
         const agente = await agentesRepository.findById(caso.agente_id);
         return { ...caso, agente };
       } catch (error) {
-        // Se o agente não for encontrado, retorna o caso sem o agente ou com um agente nulo
+
         return { ...caso, agente: null }; 
       }
     }));
@@ -33,7 +33,7 @@ const getAllCasos = async (req, res, next) => {
 const getCasoById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const caso = await casosRepository.findById(id); // findById já lança 404 se não encontrar
+    const caso = await casosRepository.findById(id); 
 
     const agente = await agentesRepository.findById(caso.agente_id);
 
@@ -47,12 +47,21 @@ const createCaso = async (req, res, next) => {
   try {
     const { titulo, descricao, status, agente_id } = req.body;
 
-    if (!titulo || typeof titulo !== "string" || !descricao || typeof descricao !== "string" || !status || !agente_id) {
-      throw new AppError("Todos os campos (titulo, descricao, status, agente_id) são obrigatórios e devem ser strings.", 400);
+    if (!titulo || typeof titulo !== "string") {
+      throw new AppError("O campo titulo é obrigatório e deve ser uma string.", 400);
+    }
+    if (!descricao || typeof descricao !== "string") {
+      throw new AppError("O campo descricao é obrigatório e deve ser uma string.", 400);
+    }
+    if (!status) {
+      throw new AppError("O campo status é obrigatório.", 400);
     }
     const statusValidos = ["aberto", "solucionado"];
     if (!statusValidos.includes(status)) {
-      throw new AppError("O status do caso deve ser \'aberto\' ou \'solucionado\'.", 400);
+      throw new AppError("O status do caso deve ser 'aberto' ou 'solucionado'.", 400);
+    }
+    if (!agente_id || typeof agente_id !== "number" || agente_id <= 0) {
+      throw new AppError("O campo agente_id é obrigatório e deve ser um número inteiro positivo.", 400);
     }
     
     await agentesRepository.findById(agente_id);
@@ -72,17 +81,28 @@ const updateCaso = async (req, res, next) => {
     const { titulo, descricao, status, agente_id } = req.body;
 
     if (req.body.id && req.body.id !== id) {
-      throw new AppError("O \'id\' do corpo da requisição não pode ser diferente do \'id\' da URL.", 400);
+      throw new AppError("O 'id' do corpo da requisição não pode ser diferente do 'id' da URL.", 400);
     }
 
-    if (!titulo || typeof titulo !== "string" || !descricao || typeof descricao !== "string" || !status || !agente_id) {
-      throw new AppError("Para uma requisição PUT, todos os campos (titulo, descricao, status, agente_id) são obrigatórios e devem ser strings.", 400);
+    if (!titulo || typeof titulo !== "string") {
+      throw new AppError("O campo titulo é obrigatório e deve ser uma string para atualização PUT.", 400);
+    }
+    if (!descricao || typeof descricao !== "string") {
+      throw new AppError("O campo descricao é obrigatório e deve ser uma string para atualização PUT.", 400);
+    }
+    if (!status) {
+      throw new AppError("O campo status é obrigatório para atualização PUT.", 400);
     }
     const statusValidos = ["aberto", "solucionado"];
     if (!statusValidos.includes(status)) {
-      throw new AppError("O status do caso deve ser \'aberto\' ou \'solucionado\'.", 400);
+      throw new AppError("O status do caso deve ser 'aberto' ou 'solucionado' para atualização PUT.", 400);
+    }
+    if (!agente_id || typeof agente_id !== "number" || agente_id <= 0) {
+      throw new AppError("O campo agente_id é obrigatório e deve ser um número inteiro positivo para atualização PUT.", 400);
     }
 
+
+    await casosRepository.findById(id);
     await agentesRepository.findById(agente_id);
     
     const updatedCase = await casosRepository.update(id, { titulo, descricao, status, agente_id });
@@ -99,7 +119,7 @@ const patchCaso = async (req, res, next) => {
     const updates = req.body;
 
     if (updates.id) {
-      throw new AppError("O campo \'id\' não pode ser alterado.", 400);
+      throw new AppError("O campo 'id' não pode ser alterado.", 400);
     }
 
     if (Object.keys(updates).length === 0) {
@@ -113,11 +133,17 @@ const patchCaso = async (req, res, next) => {
       throw new AppError("A descrição deve ser uma string.", 400);
     }
     if (updates.status && !["aberto", "solucionado"].includes(updates.status)) {
-      throw new AppError("O status do caso deve ser \'aberto\' ou \'solucionado\'.", 400);
+      throw new AppError("O status do caso deve ser 'aberto' ou 'solucionado'.", 400);
     }
     if (updates.agente_id) {
+      if (typeof updates.agente_id !== "number" || updates.agente_id <= 0) {
+        throw new AppError("O campo agente_id deve ser um número inteiro positivo.", 400);
+      }
       await agentesRepository.findById(updates.agente_id);
     }
+
+
+    await casosRepository.findById(id);
 
     const updatedCase = await casosRepository.update(id, updates);
     
@@ -130,8 +156,12 @@ const patchCaso = async (req, res, next) => {
 const deleteCaso = async (req, res, next) => {
   try {
     const { id } = req.params;
+
+    await casosRepository.findById(id);
+
     const deleted = await casosRepository.remove(id);
     if (!deleted) {
+
       throw new AppError("Caso não encontrado.", 404);
     }
     res.status(204).send();

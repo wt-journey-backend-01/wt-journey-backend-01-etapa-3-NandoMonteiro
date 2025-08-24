@@ -47,11 +47,17 @@ const createAgente = async (req, res, next) => {
   try {
     const { nome, dataDeIncorporacao, cargo } = req.body;
 
-    if (!nome || typeof nome !== 'string' || !dataDeIncorporacao || !cargo || typeof cargo !== 'string') {
-      throw new AppError('Os campos nome, dataDeIncorporacao e cargo são obrigatórios e devem ser strings.', 400);
+    if (!nome || typeof nome !== 'string') {
+      throw new AppError('O campo nome é obrigatório e deve ser uma string.', 400);
+    }
+    if (!dataDeIncorporacao) {
+      throw new AppError('O campo dataDeIncorporacao é obrigatório.', 400);
     }
     if (!validarData(dataDeIncorporacao)) {
-      throw new AppError('Data de incorporação inválida. Use o formato YYYY-MM-DD e não informe datas futuras.', 400);
+      throw new new AppError('Data de incorporação inválida. Use o formato YYYY-MM-DD e não informe datas futuras.', 400);
+    }
+    if (!cargo || typeof cargo !== 'string') {
+      throw new AppError('O campo cargo é obrigatório e deve ser uma string.', 400);
     }
     
     const dadosNovoAgente = { nome, dataDeIncorporacao, cargo };
@@ -71,12 +77,21 @@ const updateAgente = async (req, res, next) => {
     if (req.body.id && req.body.id !== id) {
       throw new AppError("O 'id' do corpo da requisição não pode ser diferente do 'id' da URL.", 400);
     }
-    if (!nome || typeof nome !== 'string' || !dataDeIncorporacao || !cargo || typeof cargo !== 'string') {
-      throw new AppError('Para uma requisição PUT, todos os campos (nome, dataDeIncorporacao, cargo) são obrigatórios e devem ser strings.', 400);
+    if (!nome || typeof nome !== 'string') {
+      throw new AppError('O campo nome é obrigatório e deve ser uma string para atualização PUT.', 400);
+    }
+    if (!dataDeIncorporacao) {
+      throw new AppError('O campo dataDeIncorporacao é obrigatório para atualização PUT.', 400);
     }
     if (!validarData(dataDeIncorporacao)) {
-      throw new AppError('Data de incorporação inválida.', 400);
+      throw new AppError('Data de incorporação inválida para atualização PUT.', 400);
     }
+    if (!cargo || typeof cargo !== 'string') {
+      throw new AppError('O campo cargo é obrigatório e deve ser uma string para atualização PUT.', 400);
+    }
+
+
+    await agentesRepository.findById(id);
     
     const agenteAtualizado = await agentesRepository.update(id, { nome, dataDeIncorporacao, cargo });
     
@@ -106,6 +121,9 @@ const patchAgente = async (req, res, next) => {
     if (updates.cargo && typeof updates.cargo !== 'string') {
       throw new AppError('O cargo deve ser uma string.', 400);
     }
+
+
+    await agentesRepository.findById(id);
     
     const agenteAtualizado = await agentesRepository.update(id, updates);
     
@@ -118,8 +136,12 @@ const patchAgente = async (req, res, next) => {
 const deleteAgente = async (req, res, next) => {
   try {
     const { id } = req.params;
+
+    await agentesRepository.findById(id);
+
     const deleted = await agentesRepository.remove(id);
     if (!deleted) {
+
       throw new AppError('Agente não encontrado.', 404);
     }
     res.status(204).send();
