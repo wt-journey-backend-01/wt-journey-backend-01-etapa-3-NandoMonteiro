@@ -4,226 +4,215 @@ Você tem 9 créditos restantes para usar o sistema de feedback AI.
 
 # Feedback para NandoMonteiro:
 
-Nota final: **38.4/100**
+Nota final: **40.7/100**
 
-# Feedback para você, NandoMonteiro! 🚔🚀
+# Feedback para você, NandoMonteiro 🚔💻
 
-Olá, Nando! Antes de mais nada, parabéns por toda a dedicação e esforço que você colocou nesse projeto! 🎉 Construir uma API REST robusta com Express.js, PostgreSQL e Knex.js não é tarefa simples, e você já mostrou domínio em vários pontos importantes. Vamos juntos analisar seu código para destravar tudo que falta e deixar sua aplicação tinindo! 💪
+Olá, Nando! Primeiro, quero te parabenizar pelo esforço e pela estrutura geral do seu projeto! 🎉 Você conseguiu implementar a persistência com PostgreSQL usando Knex.js, manteve a modularidade com controllers, repositories e rotas, e até implementou filtros e ordenações, o que é um baita avanço! Além disso, você já entregou funcionalidades bônus importantes, como a filtragem simples por status e agente nos casos, o que mostra seu interesse em ir além do básico. 👏👏
 
----
-
-## 🎯 Pontos Positivos e Conquistas Extras
-
-- Sua estrutura de pastas está muito bem organizada! Você manteve a modularidade com `routes`, `controllers`, `repositories` e `utils`, exatamente como o esperado. Isso é fundamental para escalabilidade e manutenção do projeto. 👏
-
-- A configuração do banco de dados com o Knex no arquivo `knexfile.js` está correta, usando variáveis de ambiente para proteger dados sensíveis. Ótima prática! 🌱
-
-- As migrations para as tabelas `agentes` e `casos` estão bem definidas, incluindo a foreign key com `onDelete('cascade')`, garantindo integridade referencial.
-
-- Os seeds estão populando as tabelas com dados iniciais coerentes, ajudando no desenvolvimento e testes.
-
-- Você implementou as operações básicas REST (GET, POST, PUT, PATCH, DELETE) para ambos os recursos, com validações e tratamento de erros usando a classe `AppError`. Isso demonstra preocupação com a robustez da API.
-
-- Parabéns por implementar o filtro de casos por status corretamente! 🎉 Esse é um bônus que mostra que você está indo além do básico.
+Agora, vamos juntos destrinchar alguns pontos para que seu projeto fique ainda mais sólido e alinhado com o esperado, ok? 🚀
 
 ---
 
-## 🔎 Análise Profunda: Onde o Código Precisa de Atenção
+## 1. Estrutura de Diretórios — Está Quase Perfeita! 📂
 
-### 1. Validação e Tratamento de Erros para Agentes (Criação e Atualização)
+Sua estrutura está bem organizada e muito próxima do esperado, o que é ótimo! Só fique atento para garantir que os arquivos estejam exatamente onde deveriam, especialmente o `db.js` dentro da pasta `db/`, e as migrations e seeds nas pastas corretas (`db/migrations` e `db/seeds`). Vi que você fez isso certinho, parabéns! Isso ajuda demais na manutenção e na execução dos comandos do Knex.
 
-Você fez um bom trabalho validando os campos obrigatórios e a data de incorporação no controller de agentes. Porém, percebi que em alguns pontos, a validação não está bloqueando corretamente payloads com formato incorreto, o que pode causar falha nos testes de status 400.
+---
 
-Por exemplo, no método `createAgente`:
+## 2. Conexão com o Banco de Dados — Está Configurada Corretamente! 🐘
+
+Você configurou o `knexfile.js` e o `db/db.js` de forma adequada, usando as variáveis de ambiente do `.env` e o ambiente de desenvolvimento. Também seu `docker-compose.yml` está usando as variáveis para subir o container do PostgreSQL com volume persistente, o que é essencial para não perder dados.
+
+**Dica:** Certifique-se sempre de que seu container está rodando e que as variáveis do `.env` estejam exatamente com os valores esperados (`postgres` para usuário, senha e nome do banco), porque qualquer divergência aqui impede a conexão com o banco e gera erros difíceis de rastrear.
+
+Para reforçar seu entendimento, recomendo este conteúdo que explica bem a configuração do ambiente com Docker e Knex:
+- [Configuração de Banco de Dados com Docker e Knex](http://googleusercontent.com/youtube.com/docker-postgresql-node)
+
+---
+
+## 3. Migrations e Seeds — Muito Bem Feitos! 🎯
+
+Você criou as migrations para `agentes` e `casos` com as colunas corretas, incluindo a foreign key com `onDelete('cascade')`, o que é ótimo para manter a integridade referencial.
+
+Também as seeds estão populando as tabelas com dados iniciais válidos e coerentes.
+
+**Atenção:** Sempre rode os comandos `npx knex migrate:latest` e `npx knex seed:run` a partir da raiz do projeto para evitar criar pastas duplicadas e garantir que as migrations e seeds sejam aplicadas corretamente.
+
+Para aprofundar, veja o guia oficial do Knex sobre migrations e seeds:
+- [Migrations Knex.js](https://knexjs.org/guide/migrations.html)
+- [Seeds Knex.js](http://googleusercontent.com/youtube.com/knex-seeds)
+
+---
+
+## 4. Validação e Tratamento de Erros — Ótima Base, Mas Pode Melhorar! ⚠️
+
+Você implementou várias validações importantes nos seus controllers, como verificar se campos obrigatórios existem e têm o tipo correto, e se datas estão no formato correto. Também usou o `AppError` para lançar erros customizados com códigos HTTP apropriados, o que é excelente.
+
+Porém, notei alguns pontos que podem estar causando falhas:
+
+### a) Validação no Controller de Casos — Checagem de `agente_id`
+
+No `createCaso` e em outros métodos, você faz:
 
 ```js
-if (!nome || !dataDeIncorporacao || !cargo) {
-  throw new AppError('Os campos nome, dataDeIncorporacao e cargo são obrigatórios.', 400);
-}
-if (!validarData(dataDeIncorporacao)) {
-  throw new AppError('Data de incorporação inválida. Use o formato YYYY-MM-DD e não informe datas futuras.', 400);
+await agentesRepository.findById(agente_id);
+```
+
+Isso é perfeito para garantir que o agente existe antes de criar ou atualizar um caso. Porém, se o `agente_id` não for um número válido (ex: string vazia, undefined), o método pode lançar um erro inesperado ou não tratar corretamente o caso.
+
+**Sugestão:** Antes de chamar `findById`, valide se `agente_id` é um número inteiro positivo. Caso contrário, lance um erro 400 com mensagem clara.
+
+### b) Validação de Tipos no Payload
+
+No método `createCaso`, você tem:
+
+```js
+if (!titulo || typeof titulo !== "string" || !descricao || typeof descricao !== "string" || !status || !agente_id) {
+  throw new AppError("Todos os campos (titulo, descricao, status, agente_id) são obrigatórios e devem ser strings.", 400);
 }
 ```
 
-Isso está certo, mas é importante garantir que o tipo dos campos também seja validado (por exemplo, `nome` e `cargo` como strings). Caso contrário, se o payload enviar um número ou objeto, isso pode passar despercebido.
+Aqui, `agente_id` é um número, mas você está dizendo que todos devem ser strings, o que gera confusão. Além disso, o teste pode estar esperando um erro 400 se o payload estiver mal formatado.
 
-**Sugestão:** Use uma biblioteca como [Zod](https://zod.dev/) para validar o formato e tipos dos dados de entrada, o que deixa o código mais robusto e limpo.
+**Sugestão:** Ajuste a mensagem para refletir os tipos corretos e valide `agente_id` como número. Por exemplo:
+
+```js
+if (
+  !titulo || typeof titulo !== "string" ||
+  !descricao || typeof descricao !== "string" ||
+  !status || typeof status !== "string" ||
+  !agente_id || typeof agente_id !== "number"
+) {
+  throw new AppError("Todos os campos (titulo, descricao, status, agente_id) são obrigatórios e devem ter os tipos corretos.", 400);
+}
+```
+
+### c) Tratamento de Erros de Not Found (404)
+
+Nos métodos que buscam por ID (`getAgenteById`, `getCasoById`, `update`, `delete`), você delega para o repository lançar o erro 404 se o registro não existir, o que é ótimo.
+
+Porém, em alguns lugares, como no `patchAgente` e `patchCaso`, se o ID não existir, o erro pode não estar sendo tratado corretamente, porque você chama `update` diretamente e, se o registro não existir, pode não lançar o erro esperado.
+
+**Sugestão:** Antes de atualizar ou deletar, faça uma busca explícita para garantir que o recurso existe, e lance erro 404 caso contrário. Isso evita erros genéricos e melhora a clareza do código.
 
 ---
 
-### 2. Busca por ID e Tratamento de Erros 404
+## 5. Repositories — Query Builder e Tratamento de Erros Bem Feitos, Mas Atenção à Consistência! 🔍
 
-Nos métodos `getAgenteById` e `getCasoById`, você chama o repositório para buscar pelo ID, que já lança o erro 404 caso o registro não exista. Muito bom!
+Seus métodos nos repositories usam o Knex corretamente para criar queries, inserir, atualizar e deletar.
 
-Porém, notei que no controller de casos, no método `getCasoById`, você não trata a possibilidade do caso não existir antes de tentar buscar o agente:
+Um ponto importante é o uso do `.returning("*")` que funciona bem no PostgreSQL para obter o registro atualizado/criado.
+
+**Atenção:** No método `findAll` do `agentesRepository`, você aceita filtros e ordenação, mas no controller você passa `dataInicio` e `dataFim` como filtros, enquanto no README e testes esses filtros são esperados. Certifique-se de que esses parâmetros estejam sendo passados corretamente no query string e tratados no controller.
+
+---
+
+## 6. Endpoints e Rotas — Muito Bem Documentados e Organizados! 🗺️
+
+Adorei o uso do Swagger para documentar suas rotas e schemas, isso é profissional e ajuda demais na manutenção.
+
+A organização das rotas em arquivos separados (`agentesRoutes.js` e `casosRoutes.js`) e o uso dos controllers está muito bom.
+
+---
+
+## 7. Pontos de Melhoria para Liberar Todo o Potencial do Seu Projeto 🚀
+
+### a) Filtro por Data de Incorporação com Ordenação (Bônus que Falhou)
+
+Você já tem o filtro por cargo e ordenação funcionando, mas os testes indicam que o filtro por intervalo de datas (`dataInicio` e `dataFim`) com ordenação asc/desc não está funcionando perfeitamente.
+
+Recomendo revisar a passagem desses parâmetros do controller para o repository, e garantir que o Knex está aplicando os filtros corretamente:
 
 ```js
-const caso = await casosRepository.findById(id);
-const agente = await agentesRepository.findById(caso.agente_id);
+if (filters.dataInicio) {
+  query.where("dataDeIncorporacao", ">=", filters.dataInicio);
+}
+if (filters.dataFim) {
+  query.where("dataDeIncorporacao", "<=", filters.dataFim);
+}
 ```
 
-Se `caso` for `undefined` (caso não encontrado), a linha seguinte vai causar um erro inesperado porque tentará acessar `agente_id` de `undefined`.
+E no controller, conferir se `dataInicio` e `dataFim` são recebidos corretamente da query string.
 
-**Como corrigir?**
+### b) Busca de Casos por Palavras-Chave no Título ou Descrição
 
-Você pode envolver essa lógica em um try/catch, ou melhor, garantir que o `findById` do repositório lance o erro 404, e que o controller capture isso corretamente.
+Você implementou o filtro `search` no `casosRepository.findAll`, o que é ótimo. Porém, os testes bônus indicam que a busca por keywords pode não estar funcionando 100%.
 
-Por exemplo:
+Verifique se o parâmetro `search` está sendo passado corretamente e tratado no controller, e se o operador `ilike` está aplicado corretamente:
 
 ```js
-const getCasoById = async (req, res, next) => {
+query.where((builder) => {
+  builder.where("titulo", "ilike", searchTerm)
+         .orWhere("descricao", "ilike", searchTerm);
+});
+```
+
+### c) Mensagens de Erro Customizadas para Argumentos Inválidos
+
+Seus erros customizados com o `AppError` são um ótimo caminho, mas as mensagens podem ser melhoradas para refletir exatamente o que está errado (ex: campo faltando, formato incorreto, id inválido).
+
+Isso ajuda o cliente da API a entender o que corrigir.
+
+---
+
+## 8. Sugestão de Pequena Refatoração para Validação no Controller de Casos
+
+Para facilitar a validação e evitar repetições, você pode usar a biblioteca `zod` (que já está nas suas dependências) para definir schemas e validar o payload, por exemplo:
+
+```js
+const { z } = require("zod");
+
+const casoSchema = z.object({
+  titulo: z.string(),
+  descricao: z.string(),
+  status: z.enum(["aberto", "solucionado"]),
+  agente_id: z.number().int().positive(),
+});
+
+const createCaso = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const caso = await casosRepository.findById(id); // lança 404 se não encontrar
-    const agente = await agentesRepository.findById(caso.agente_id);
-    res.status(200).json({ ...caso, agente });
+    const parsedData = casoSchema.parse(req.body);
+    await agentesRepository.findById(parsedData.agente_id);
+    const createdCaso = await casosRepository.create(parsedData);
+    res.status(201).json(createdCaso);
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return next(new AppError("Dados inválidos: " + error.errors.map(e => e.message).join(", "), 400));
+    }
     next(error);
   }
 };
 ```
 
-Se o `findById` do repositório estiver correto, isso já deve funcionar, mas vale revisar para garantir que o erro 404 está sendo lançado e tratado.
+Isso deixa seu código mais limpo e robusto! Para aprender mais, veja:
+- [Validação de Dados em Node.js com Zod](https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_)
 
 ---
 
-### 3. Filtros e Ordenação na Listagem de Agentes e Casos
+## 9. Resumo dos Principais Pontos para Focar 🚦
 
-Você implementou os filtros e ordenações no controller de agentes e casos, mas notei que a filtragem está sendo feita **em memória**, após buscar todos os registros do banco:
-
-```js
-let agentes = await agentesRepository.findAll();
-// depois faz filtros com .filter() no array
-```
-
-Isso pode funcionar para poucos registros, mas não é escalável nem eficiente.
-
-**Problema:** Você está trazendo tudo do banco e filtrando no JavaScript, em vez de usar o Knex para fazer os filtros direto na query SQL.
-
-**Impacto:** Isso pode causar lentidão e uso excessivo de memória, além de não funcionar corretamente em filtros complexos.
-
-**Como melhorar:**
-
-- Mova os filtros e ordenações para o `repository`, usando o Query Builder do Knex para construir consultas dinâmicas.
-
-Por exemplo, no `agentesRepository.js`:
-
-```js
-async function findAll(filters = {}) {
-  const query = db('agentes');
-
-  if (filters.cargo) {
-    query.where('cargo', 'ilike', filters.cargo);
-  }
-  if (filters.dataInicio) {
-    query.where('dataDeIncorporacao', '>=', filters.dataInicio);
-  }
-  if (filters.dataFim) {
-    query.where('dataDeIncorporacao', '<=', filters.dataFim);
-  }
-  if (filters.orderBy) {
-    query.orderBy(filters.orderBy, filters.order || 'asc');
-  }
-
-  return await query.select('*');
-}
-```
-
-No controller, você passa os parâmetros de query para o repository:
-
-```js
-const agentes = await agentesRepository.findAll({
-  cargo,
-  dataInicio,
-  dataFim,
-  orderBy,
-  order,
-});
-```
-
-Isso vai garantir que o banco faça o trabalho pesado e que sua API responda rápido e corretamente.
+- **Validação de Tipos e Campos no Payload:** Garanta que o `agente_id` seja validado como número e que as mensagens de erro reflitam os tipos corretos.
+- **Tratamento de Erros 404:** Antes de atualizar ou deletar, confirme que o recurso existe para lançar erro 404 com clareza.
+- **Filtros por Data e Busca por Keywords:** Revise passagem e uso dos parâmetros `dataInicio`, `dataFim` e `search` para garantir que os filtros funcionem corretamente.
+- **Mensagens de Erro Customizadas:** Aprimore as mensagens para serem mais específicas e úteis para o consumidor da API.
+- **Uso do Zod para Validação:** Considere usar a biblioteca Zod para validar os dados de entrada de forma mais elegante e segura.
+- **Confirmação do Ambiente:** Verifique sempre se o container do PostgreSQL está rodando e as variáveis do `.env` estão corretas para evitar erros de conexão.
 
 ---
 
-### 4. Filtros e Busca no Controller de Casos
+## Finalizando 🚀
 
-O mesmo vale para o controller de casos: os filtros por `status`, `agente_id` e busca por palavra-chave estão sendo feitos em memória, após buscar todos os casos.
+Nando, seu projeto está muito bem encaminhado e você já demonstrou domínio em vários pontos importantes, como modularização, uso do Knex, e documentação Swagger. Com alguns ajustes finos na validação e tratamento de erros, além de garantir o funcionamento dos filtros mais complexos, você vai destravar todo o potencial da sua API!
 
-Além disso, no filtro por `agente_id`, você chama o repositório de agentes para verificar se o agente existe, o que é ótimo, mas depois filtra o array com `.filter()`, que já está carregado em memória.
+Continue firme, revisando cada feedback com calma e testando passo a passo. Você está no caminho certo para se tornar um mestre em APIs REST com Node.js e PostgreSQL! 💪🌟
 
-**Dica:** Implemente a filtragem diretamente no repository de casos, usando Knex para adicionar condições `where` conforme os parâmetros.
-
----
-
-### 5. Atualização e Validação Parcial (PATCH)
-
-Você já implementou a validação parcial no controller de agentes e casos, o que é excelente. Porém, cuidado ao atualizar registros: se o objeto `updates` for vazio, você lança erro, o que está correto.
-
-Também é importante garantir que o ID nunca seja alterado, o que você já faz.
+Se precisar de ajuda para entender melhor qualquer ponto, dá uma olhada nos recursos que te indiquei e, claro, pode contar comigo para o que precisar! 😉
 
 ---
 
-### 6. Status Codes e Respostas HTTP
-
-Você está usando os status codes corretos na maioria dos casos (201 para criação, 200 para sucesso, 204 para deletar). Isso é muito bom! Continue assim.
-
----
-
-### 7. Arquivo `.env` e Docker
-
-Pelo que vi, sua configuração do `docker-compose.yml` e do `.env` está adequada, usando as variáveis de ambiente conforme esperado.
-
-Só fique atento para garantir que o container do PostgreSQL está rodando antes de executar as migrations e seeds, para evitar erros de conexão.
-
----
-
-## 📚 Recomendações de Aprendizado para Aprofundar
-
-- Para melhorar a integração do Knex com filtros dinâmicos, recomendo fortemente o guia oficial do Knex Query Builder:  
-  https://knexjs.org/guide/query-builder.html
-
-- Para entender melhor como criar e rodar migrations e seeds, veja este tutorial oficial do Knex:  
-  https://knexjs.org/guide/migrations.html
-
-- Sobre configuração de banco com Docker e variáveis de ambiente, este vídeo é excelente:  
-  http://googleusercontent.com/youtube.com/docker-postgresql-node
-
-- Para aprimorar a validação de dados e tratamento de erros na API, recomendo este vídeo que explica como fazer validação robusta com Express:  
-  https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_
-
-- Para entender melhor os códigos HTTP e como usá-los corretamente em APIs REST, confira este conteúdo:  
-  https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/400  
-  https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/404
-
-- Para organizar seu código em MVC e manter a estrutura limpa, este vídeo é muito útil:  
-  https://youtu.be/bGN_xNc4A1k?si=Nj38J_8RpgsdQ-QH
-
----
-
-## 🗺️ Resumo dos Principais Pontos para Focar
-
-- **Mover filtros e ordenações para o repositório**, usando Knex para consultar o banco de dados de forma eficiente, em vez de filtrar em memória.
-
-- **Garantir validação completa dos dados recebidos**, incluindo tipos, para evitar payloads mal formatados passarem despercebidos.
-
-- **Tratar corretamente erros de busca por ID**, garantindo que o código não tente acessar propriedades de objetos `undefined`.
-
-- **Continuar usando e aprimorar o uso da classe `AppError` para tratamento consistente de erros e status HTTP.**
-
-- **Garantir que o container do PostgreSQL esteja rodando e que as migrations e seeds sejam aplicadas corretamente antes de rodar a aplicação.**
-
----
-
-## Finalizando...
-
-Nando, seu projeto está em um caminho muito bom! Você já domina conceitos importantes como modularização, uso do Knex, validação e tratamento de erros. Com as melhorias que sugeri, sua API vai ficar mais robusta, performática e alinhada com boas práticas do mercado. 🚀
-
-Continue firme, revisando a forma como você integra o banco de dados e validando os dados de entrada com mais rigor. Isso fará toda a diferença para você se destacar como um desenvolvedor backend!
-
-Qualquer dúvida, estarei aqui para ajudar! 💙👨‍💻
-
-Abraços e até a próxima!  
-Seu Code Buddy 🤖✨
+Abraços e bons códigos!  
+Seu Code Buddy 🤖❤️
 
 > Caso queira tirar uma dúvida específica, entre em contato com o Chapter no nosso [discord](https://discord.gg/DryuHVnz).
 
