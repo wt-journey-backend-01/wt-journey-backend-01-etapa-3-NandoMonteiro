@@ -5,7 +5,7 @@ async function findById(id) {
   try {
     const agente = await db("agentes").where({ id }).first();
     if (!agente) {
-      throw new AppError("Agente não encontrado", [], 404);
+      throw new AppError("Agente não encontrado", 404);
     }
     return agente;
   } catch (error) {
@@ -53,7 +53,7 @@ async function update(id, data) {
   try {
     const [agente] = await db("agentes").where({ id }).update(data).returning("*");
     if (!agente) {
-      throw new AppError("Agente não encontrado", [], 404);
+      throw new AppError("Agente não encontrado", 404);
     }
     return agente;
   } catch (error) {

@@ -25,7 +25,7 @@ async function findAll(filters = {}) {
     const casos = await query.select("*");
     return casos;
   } catch (error) {
-    throw new AppError("Erro ao buscar casos", 500, [error.message]);
+    throw new AppError(500, "Erro ao buscar casos", [error.message]);
   }
 }
 
@@ -33,14 +33,14 @@ async function findById(id) {
   try {
     const caso = await db("casos").where({ id }).first();
     if (!caso) {
-      throw new AppError("Caso não encontrado", [], 404);
+      throw new AppError(404, "Caso não encontrado");
     }
     return caso;
   } catch (error) {
     if (error instanceof AppError) {
       throw error;
     }
-    throw new AppError("Erro ao buscar caso por ID", 500, [error.message]);
+    throw new AppError(500, "Erro ao buscar caso por ID", [error.message]);
   }
 }
 
@@ -49,7 +49,7 @@ async function create(data) {
     const [caso] = await db("casos").insert(data).returning("*");
     return caso;  
   } catch (error) {
-    throw new AppError("Erro ao criar caso", 500, [error.message]);
+    throw new AppError(500, "Erro ao criar caso", [error.message]);
   }
 }
 
@@ -57,14 +57,14 @@ async function update(id, data) {
   try {
     const [caso] = await db("casos").where({ id }).update(data).returning("*");
     if (!caso) {
-      throw new AppError("Caso não encontrado", [], 404);
+      throw new AppError(404, "Caso não encontrado");
     }
     return caso;
   } catch (error) {
     if (error instanceof AppError) {
       throw error;
     }
-    throw new AppError("Erro ao atualizar caso", 500, [error.message]);
+    throw new AppError(500, "Erro ao atualizar caso", [error.message]);
   }
 }
 
@@ -74,7 +74,7 @@ async function remove(id) {
     return deleted > 0;
     
   } catch (error) {
-    throw new AppError("Erro ao deletar caso", 500, [error.message]);
+    throw new AppError(500, "Erro ao deletar caso", [error.message]);
   }
 }
 

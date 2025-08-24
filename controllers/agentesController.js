@@ -48,16 +48,16 @@ const createAgente = async (req, res, next) => {
     const { nome, dataDeIncorporacao, cargo } = req.body;
 
     if (!nome || typeof nome !== 'string') {
-      throw new AppError('O campo nome é obrigatório e deve ser uma string.', 400);
+      throw new AppError(400, 'O campo nome é obrigatório e deve ser uma string.');
     }
     if (!dataDeIncorporacao) {
-      throw new AppError('O campo dataDeIncorporacao é obrigatório.', 400);
+      throw new AppError(400, 'O campo dataDeIncorporacao é obrigatório.');
     }
     if (!validarData(dataDeIncorporacao)) {
-      throw new new AppError('Data de incorporação inválida. Use o formato YYYY-MM-DD e não informe datas futuras.', 400);
+      throw new AppError(400, 'Data de incorporação inválida. Use o formato YYYY-MM-DD e não informe datas futuras.');
     }
     if (!cargo || typeof cargo !== 'string') {
-      throw new AppError('O campo cargo é obrigatório e deve ser uma string.', 400);
+      throw new AppError(400, 'O campo cargo é obrigatório e deve ser uma string.');
     }
     
     const dadosNovoAgente = { nome, dataDeIncorporacao, cargo };
@@ -75,22 +75,22 @@ const updateAgente = async (req, res, next) => {
     const { nome, dataDeIncorporacao, cargo } = req.body;
 
     if (req.body.id && req.body.id !== id) {
-      throw new AppError("O 'id' do corpo da requisição não pode ser diferente do 'id' da URL.", 400);
+      throw new AppError(400, "O 'id' do corpo da requisição não pode ser diferente do 'id' da URL.");
     }
     if (!nome || typeof nome !== 'string') {
-      throw new AppError('O campo nome é obrigatório e deve ser uma string para atualização PUT.', 400);
+      throw new AppError(400, 'O campo nome é obrigatório e deve ser uma string para atualização PUT.');
     }
     if (!dataDeIncorporacao) {
-      throw new AppError('O campo dataDeIncorporacao é obrigatório para atualização PUT.', 400);
+      throw new AppError(400, 'O campo dataDeIncorporacao é obrigatório para atualização PUT.');
     }
     if (!validarData(dataDeIncorporacao)) {
-      throw new AppError('Data de incorporação inválida para atualização PUT.', 400);
+      throw new AppError(400, 'Data de incorporação inválida para atualização PUT.');
     }
     if (!cargo || typeof cargo !== 'string') {
-      throw new AppError('O campo cargo é obrigatório e deve ser uma string para atualização PUT.', 400);
+      throw new AppError(400, 'O campo cargo é obrigatório e deve ser uma string para atualização PUT.');
     }
 
-
+    // Verifica se o agente existe antes de tentar atualizar
     await agentesRepository.findById(id);
     
     const agenteAtualizado = await agentesRepository.update(id, { nome, dataDeIncorporacao, cargo });
@@ -107,22 +107,22 @@ const patchAgente = async (req, res, next) => {
     const updates = req.body;
 
     if (updates.id) {
-      throw new AppError("O campo 'id' não pode ser alterado.", 400);
+      throw new AppError(400, "O campo 'id' não pode ser alterado.");
     }
     if (Object.keys(updates).length === 0) {
-      throw new AppError('O corpo da requisição não pode estar vazio para uma operação PATCH.', 400);
+      throw new AppError(400, 'O corpo da requisição não pode estar vazio para uma operação PATCH.');
     }
     if (updates.dataDeIncorporacao && !validarData(updates.dataDeIncorporacao)) {
-      throw new AppError('Data de incorporação inválida.', 400);
+      throw new AppError(400, 'Data de incorporação inválida.');
     }
     if (updates.nome && typeof updates.nome !== 'string') {
-      throw new AppError('O nome deve ser uma string.', 400);
+      throw new AppError(400, 'O nome deve ser uma string.');
     }
     if (updates.cargo && typeof updates.cargo !== 'string') {
-      throw new AppError('O cargo deve ser uma string.', 400);
+      throw new AppError(400, 'O cargo deve ser uma string.');
     }
 
-
+    // Verifica se o agente existe antes de tentar atualizar parcialmente
     await agentesRepository.findById(id);
     
     const agenteAtualizado = await agentesRepository.update(id, updates);
@@ -136,13 +136,13 @@ const patchAgente = async (req, res, next) => {
 const deleteAgente = async (req, res, next) => {
   try {
     const { id } = req.params;
-
+    // Verifica se o agente existe antes de tentar deletar
     await agentesRepository.findById(id);
 
     const deleted = await agentesRepository.remove(id);
     if (!deleted) {
-
-      throw new AppError('Agente não encontrado.', 404);
+      // Isso não deve acontecer se findById já verificou, mas é um fallback
+      throw new AppError(404, 'Agente não encontrado.');
     }
     res.status(204).send();
   } catch (error) {
