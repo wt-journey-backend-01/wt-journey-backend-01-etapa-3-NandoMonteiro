@@ -1,5 +1,5 @@
-const agentesRepository = require('../repositories/agentesRepository');
-const { AppError } = require('../utils/errorHandler'); 
+const agentesRepository = require("../repositories/agentesRepository");
+const { AppError } = require("../utils/errorHandler"); 
 
 
 const validarData = (dateString) => {
@@ -17,41 +17,15 @@ const validarData = (dateString) => {
 
 const getAllAgentes = async (req, res, next) => {
   try {
-    const { cargo, dataDeIncorporacao, dataInicio, dataFim, orderBy, order } = req.query;
+    const { cargo, dataInicio, dataFim, orderBy, order } = req.query;
        
-    let agentes = await agentesRepository.findAll();
-    
-    if (dataInicio || dataFim) {
-      agentes = agentes.filter((agente) => {
-        const data = new Date(agente.dataDeIncorporacao);
-        const inicio = dataInicio ? new Date(dataInicio) : null;
-        const fim = dataFim ? new Date(dataFim) : null;
-        return (!inicio || data >= inicio) && (!fim || data <= fim);
-      });
-    }
-
-    if (cargo) {
-      agentes = agentes.filter(
-        (agente) => agente.cargo && agente.cargo.toLowerCase() === cargo.toLowerCase()
-      );
-    }
-
-    if (dataDeIncorporacao) {
-      agentes = agentes.filter((agente) => agente.dataDeIncorporacao === dataDeIncorporacao);
-    }
-
-    if (orderBy) {
-      const camposValidos = ['nome', 'dataDeIncorporacao', 'cargo'];
-      if (!camposValidos.includes(orderBy)) {
-        throw new AppError(`Campo para ordenação inválido. Use: ${camposValidos.join(', ')}`, 400);
-      }
-      const ordem = order === 'desc' ? -1 : 1;
-      agentes.sort((a, b) => {
-        if (a[orderBy] < b[orderBy]) return -1 * ordem;
-        if (a[orderBy] > b[orderBy]) return 1 * ordem;
-        return 0;
-      });
-    }
+    const agentes = await agentesRepository.findAll({
+      cargo,
+      dataInicio,
+      dataFim,
+      orderBy,
+      order,
+    });
 
     res.status(200).json(agentes);
   } catch (error) {
@@ -73,8 +47,8 @@ const createAgente = async (req, res, next) => {
   try {
     const { nome, dataDeIncorporacao, cargo } = req.body;
 
-    if (!nome || !dataDeIncorporacao || !cargo) {
-      throw new AppError('Os campos nome, dataDeIncorporacao e cargo são obrigatórios.', 400);
+    if (!nome || typeof nome !== 'string' || !dataDeIncorporacao || !cargo || typeof cargo !== 'string') {
+      throw new AppError('Os campos nome, dataDeIncorporacao e cargo são obrigatórios e devem ser strings.', 400);
     }
     if (!validarData(dataDeIncorporacao)) {
       throw new AppError('Data de incorporação inválida. Use o formato YYYY-MM-DD e não informe datas futuras.', 400);
@@ -97,8 +71,8 @@ const updateAgente = async (req, res, next) => {
     if (req.body.id && req.body.id !== id) {
       throw new AppError("O 'id' do corpo da requisição não pode ser diferente do 'id' da URL.", 400);
     }
-    if (!nome || !dataDeIncorporacao || !cargo) {
-      throw new AppError('Para uma requisição PUT, todos os campos (nome, dataDeIncorporacao, cargo) são obrigatórios.', 400);
+    if (!nome || typeof nome !== 'string' || !dataDeIncorporacao || !cargo || typeof cargo !== 'string') {
+      throw new AppError('Para uma requisição PUT, todos os campos (nome, dataDeIncorporacao, cargo) são obrigatórios e devem ser strings.', 400);
     }
     if (!validarData(dataDeIncorporacao)) {
       throw new AppError('Data de incorporação inválida.', 400);
@@ -125,6 +99,12 @@ const patchAgente = async (req, res, next) => {
     }
     if (updates.dataDeIncorporacao && !validarData(updates.dataDeIncorporacao)) {
       throw new AppError('Data de incorporação inválida.', 400);
+    }
+    if (updates.nome && typeof updates.nome !== 'string') {
+      throw new AppError('O nome deve ser uma string.', 400);
+    }
+    if (updates.cargo && typeof updates.cargo !== 'string') {
+      throw new AppError('O cargo deve ser uma string.', 400);
     }
     
     const agenteAtualizado = await agentesRepository.update(id, updates);

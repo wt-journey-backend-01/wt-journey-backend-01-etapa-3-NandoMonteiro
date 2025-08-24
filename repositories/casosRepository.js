@@ -1,9 +1,28 @@
 const db = require("../db/db.js");
 const { AppError } = require("../utils/errorHandler.js");
 
-async function findAll() {
+async function findAll(filters = {}) {
   try {
-    const casos = await db("casos").select("*");
+    const query = db("casos");
+
+    if (filters.status) {
+      query.where("status", filters.status);
+    }
+    if (filters.agente_id) {
+      query.where("agente_id", filters.agente_id);
+    }
+    if (filters.search) {
+      const searchTerm = `%${filters.search.toLowerCase()}%`;
+      query.where((builder) => {
+        builder.where("titulo", "ilike", searchTerm)
+               .orWhere("descricao", "ilike", searchTerm);
+      });
+    }
+    if (filters.orderBy) {
+      query.orderBy(filters.orderBy, filters.order || "asc");
+    }
+
+    const casos = await query.select("*");
     return casos;
   } catch (error) {
     throw new AppError("Erro ao buscar casos", 500, [error.message]);
